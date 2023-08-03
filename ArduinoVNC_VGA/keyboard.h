@@ -16,7 +16,6 @@ void keyboard_init() {
 
 char keyboard_get_key() {
     // Read key value from esp32c3
-    char keyValue = 0;
     Wire.requestFrom(TDECK_KEYBOARD_ADDR, 1);
     if (Wire.available() > 0) {
         return Wire.read();

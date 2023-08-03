@@ -14,11 +14,11 @@
 const char *SSID_NAME = "YourAP";
 const char *SSID_PASSWORD = "PleaseInputYourPasswordHere";
 
-const char *VNC_IP = "192.168.1.3";
+const char *VNC_IP = "192.168.1.4";
 const uint16_t VNC_PORT = 5901;
 const char *VNC_PASSWORD = "vncpassword";
 
-#define TRACK_SPEED 5
+#define TRACK_SPEED 3
 
 #include "TDECK_PINS.h"
 
@@ -93,22 +93,22 @@ int16_t trackball_click_count = 0;
 void IRAM_ATTR ISR_up()
 {
   trackball_interrupted = true;
-  trackball_up_count <<= 2;
+  trackball_up_count <<= TRACK_SPEED;
 }
 void IRAM_ATTR ISR_down()
 {
   trackball_interrupted = true;
-  trackball_down_count <<= 2;
+  trackball_down_count <<= TRACK_SPEED;
 }
 void IRAM_ATTR ISR_left()
 {
   trackball_interrupted = true;
-  trackball_left_count <<= 2;
+  trackball_left_count <<= TRACK_SPEED;
 }
 void IRAM_ATTR ISR_right()
 {
   trackball_interrupted = true;
-  trackball_right_count <<= 2;
+  trackball_right_count <<= TRACK_SPEED;
 }
 void IRAM_ATTR ISR_click()
 {
