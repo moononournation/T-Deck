@@ -55,11 +55,7 @@
  ******************************************************************************/
 #include <Arduino_GFX_Library.h>
 #define GFX_DEV_DEVICE LILYGO_T_DECK
-#define GFX_EXTRA_PRE_INIT()                 \
-  {                                          \
-    pinMode(TDECK_TFT_BACKLIGHT, OUTPUT);    \
-    digitalWrite(TDECK_TFT_BACKLIGHT, HIGH); \
-  }
+#define GFX_BL TDECK_TFT_BACKLIGHT
 Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
 Arduino_Canvas *canvasGfx = new Arduino_Canvas(640 /* width */, 480 /* height */, gfx);
@@ -139,8 +135,11 @@ void setup()
   canvasGfx->fillScreen(BLACK);
 
 #ifdef GFX_BL
-  pinMode(GFX_BL, OUTPUT);
-  digitalWrite(GFX_BL, HIGH);
+  // pinMode(GFX_BL, OUTPUT);
+  // digitalWrite(GFX_BL, HIGH);
+  ledcSetup(0, 1000, 8);
+  ledcAttachPin(GFX_BL, 0);
+  ledcWrite(0, 191);
 #endif
 
   // Init touch device
