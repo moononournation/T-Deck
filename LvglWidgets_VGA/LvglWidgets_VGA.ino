@@ -5,11 +5,10 @@
  *
  * Dependent libraries:
  * LVGL: https://github.com/lvgl/lvgl.git
-
+ * 
  * Touch libraries:
- * FT6X36: https://github.com/strange-v/FT6X36.git
- * GT911: https://github.com/TAMCTec/gt911-arduino.git
  * XPT2046: https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
+ * TouchLib: https://github.com/mmMicky/TouchLib.git
  *
  * LVGL Configuration file:
  * Copy your_arduino_path/libraries/lvgl/lv_conf_template.h
@@ -252,12 +251,6 @@ void setup()
   GFX_EXTRA_PRE_INIT();
 #endif
 
-  // Init touch device
-  touch_init(canvasGfx->width(), canvasGfx->height(), canvasGfx->getRotation());
-
-  // Init keyboard device
-  keyboard_init();
-
   // Init Display
   if (!canvasGfx->begin(80000000))
   {
@@ -273,6 +266,12 @@ void setup()
   ledcAttachPin(GFX_BL, 0);
   ledcWrite(0, 191);
 #endif
+
+  // Init touch device
+  touch_init(canvasGfx->width(), canvasGfx->height(), canvasGfx->getRotation());
+
+  // Init keyboard device
+  keyboard_init();
 
   // Init touch device
   pinMode(TDECK_TRACKBALL_UP, INPUT_PULLUP);
