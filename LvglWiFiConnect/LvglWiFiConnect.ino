@@ -198,7 +198,7 @@ void my_keyboard_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
       switch (key)
       {
       case 8:
-        key = LV_GROUP_KEY_BACKSPACE; // BackSpace
+        key = LV_KEY_BACKSPACE; // BackSpace
         break;
       case 9:
         key = LV_KEY_NEXT; // Tab
