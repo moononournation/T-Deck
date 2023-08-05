@@ -198,29 +198,29 @@ void my_keyboard_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
       switch (key)
       {
       case 8:
-        key = 0xff08; // BackSpace
+        key = LV_GROUP_KEY_BACKSPACE; // BackSpace
         break;
       case 9:
-        key = 0xff09; // Tab
+        key = LV_KEY_NEXT; // Tab
         break;
       case 10:
       case 13:
-        key = 0xff0d; // Return or Enter
+        key = LV_KEY_ENTER; // Return or Enter
         break;
       case 27:
-        key = 0xff1b; // Escape
+        key = LV_KEY_ESC; // Escape
         break;
       case 180:
-        key = 0xff51; // Left
+        key = LV_KEY_LEFT; // Left
         break;
       case 181:
-        key = 0xff52; // Up
+        key = LV_KEY_UP; // Up
         break;
       case 182:
-        key = 0xff54; // Down
+        key = LV_KEY_DOWN; // Down
         break;
       case 183:
-        key = 0xff53; // Right
+        key = LV_KEY_RIGHT; // Right
         break;
       }
 
