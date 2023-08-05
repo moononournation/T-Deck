@@ -1,0 +1,16 @@
+{
+  "codename": "Cubic11",
+  "ttf_path": "/assets/Cubic_11_1.013_R.ttf",
+  "bin_path": "/assets/ui_font_Cubic11.bin",
+  "c_path": "/assets/ui_font_Cubic11.c",
+  "cfg_path": "/assets/ui_font_Cubic11.fcfg",
+  "size": 12,
+  "bpp": 1,
+  "letters": 0,
+  "ranges": [
+    "0x20-0xFFFF"
+  ],
+  "symbols": "",
+  "customparams": "--no-prefilter",
+  "uploaded": false
+}
