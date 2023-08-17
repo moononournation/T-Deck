@@ -37,6 +37,12 @@ const char *VNC_PASSWORD = "vncpassword";
  ******************************************************************************/
 #include <Arduino_GFX_Library.h>
 #define GFX_DEV_DEVICE LILYGO_T_DECK
+#define GFX_EXTRA_PRE_INIT()                \
+  {                                         \
+    pinMode(TDECK_PERI_POWERON, OUTPUT);    \
+    digitalWrite(TDECK_PERI_POWERON, HIGH); \
+    delay(500);                             \
+  }
 #define GFX_BL TDECK_TFT_BACKLIGHT
 Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
@@ -201,13 +207,6 @@ void setup(void)
   // Serial.setDebugOutput(true);
   // while(!Serial);
   Serial.println("Arduino VNC");
-
-  //! ⚠️ The board peripheral power control pin needs to be set to HIGH when using the peripheral
-  pinMode(TDECK_PERI_POWERON, OUTPUT);
-  digitalWrite(TDECK_PERI_POWERON, HIGH);
-
-  // There needs to be a delay after power on, give LILYGO-KEYBOARD some startup time
-  delay(500);
 
 #ifdef GFX_EXTRA_PRE_INIT
   GFX_EXTRA_PRE_INIT();
