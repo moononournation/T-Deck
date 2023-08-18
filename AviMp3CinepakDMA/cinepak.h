@@ -22,7 +22,7 @@
  */
 
 #define BIG_ENDIAN_PIXEL
-#define USE_DRAW_CALLBACK
+// #define USE_DRAW_CALLBACK
 
 #ifdef USE_DRAW_CALLBACK
 typedef void(DRAW_CALLBACK)(uint16_t x, uint16_t y, uint16_t *p, uint16_t w, uint16_t h);

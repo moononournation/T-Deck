@@ -33,7 +33,7 @@ extern "C"
     delay(500);                             \
   }
 #define GFX_BL TDECK_TFT_BACKLIGHT
-Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
+Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
 /*******************************************************************************
  * End of Arduino_GFX setting
@@ -56,7 +56,6 @@ static uint16_t *output_buf;
 static size_t output_buf_size;
 static bool isStopped = true;
 static int curr_frame = 0;
-static long curr_chunk = 0;
 static int skipped_frames = 0;
 static bool skipped_last_frame = false;
 static unsigned long start_ms, curr_ms, next_frame_ms;
@@ -69,15 +68,6 @@ static unsigned long total_show_video_ms = 0;
 #define I2S_DOUT TDECK_I2S_DOUT
 #define I2S_BCLK TDECK_I2S_BCK
 #define I2S_LRCK TDECK_I2S_WS
-
-// drawing callback
-static void draw(uint16_t x, uint16_t y, uint16_t *p, uint16_t w, uint16_t h)
-{
-  // Serial.printf("draw(%d, %d, *p, %d, %d)\n", x, y, w, h);
-  unsigned long s = millis();
-  gfx->draw16bitBeRGBBitmap(x, y, p, w, h);
-  total_show_video_ms += millis() - s;
-}
 
 void setup()
 {
@@ -136,8 +126,8 @@ void setup()
 
       vidbuf = (char *)heap_caps_malloc(estimateBufferSize, MALLOC_CAP_8BIT);
       audbuf = (char *)heap_caps_malloc(MP3_MAX_FRAME_SIZE, MALLOC_CAP_8BIT);
-      output_buf_size = w * 4;
-      output_buf = (uint16_t *)heap_caps_malloc(output_buf_size * sizeof(uint16_t), MALLOC_CAP_DMA);
+      output_buf_size = w * h * 2;
+      output_buf = (uint16_t *)malloc(output_buf_size);
 
       i2s_init(I2S_NUM_0,
                aRate /* sample_rate */,
@@ -186,46 +176,49 @@ void loop()
         curr_ms = millis();
       }
 
-      // if (millis() < next_frame_ms) // check show frame or skip frame
-      // {
-      AVI_set_video_position(a, curr_frame);
-
-      int iskeyframe;
-      long video_bytes = AVI_frame_size(a, curr_frame);
-      if (video_bytes > estimateBufferSize)
+      if (millis() < next_frame_ms) // check show frame or skip frame
       {
-        Serial.printf("video_bytes(%d) > estimateBufferSize(%d)\n", video_bytes, estimateBufferSize);
+        AVI_set_video_position(a, curr_frame);
+
+        int iskeyframe;
+        long video_bytes = AVI_frame_size(a, curr_frame);
+        if (video_bytes > estimateBufferSize)
+        {
+          Serial.printf("video_bytes(%d) > estimateBufferSize(%d)\n", video_bytes, estimateBufferSize);
+        }
+        else
+        {
+          actual_video_size = AVI_read_frame(a, vidbuf, &iskeyframe);
+          total_read_video_ms += millis() - curr_ms;
+          curr_ms = millis();
+          // Serial.printf("frame: %d, iskeyframe: %d, video_bytes: %d, actual_video_size: %d, audio_bytes: %d, ESP.getFreeHeap(): %d\n", curr_frame, iskeyframe, video_bytes, actual_video_size, audio_bytes, ESP.getFreeHeap());
+
+          if ((!skipped_last_frame) || iskeyframe)
+          {
+            skipped_last_frame = false;
+            decoder.decodeFrame((uint8_t *)vidbuf, actual_video_size, output_buf, output_buf_size);
+            total_decode_video_ms += millis() - curr_ms;
+            curr_ms = millis();
+            gfx->draw16bitBeRGBBitmap(0, 0, output_buf, w, h);
+            total_show_video_ms += millis() - curr_ms;
+            curr_ms = millis();
+          }
+          else
+          {
+            ++skipped_frames;
+          }
+        }
+        while (millis() < next_frame_ms)
+        {
+          vTaskDelay(pdMS_TO_TICKS(1));
+        }
       }
       else
       {
-        actual_video_size = AVI_read_frame(a, vidbuf, &iskeyframe);
-        total_read_video_ms += millis() - curr_ms;
-        curr_ms = millis();
-        // Serial.printf("frame: %d, iskeyframe: %d, video_bytes: %d, actual_video_size: %d, audio_bytes: %d, ESP.getFreeHeap(): %d\n", curr_frame, iskeyframe, video_bytes, actual_video_size, audio_bytes, ESP.getFreeHeap());
-
-        // if ((!skipped_last_frame) || iskeyframe)
-        // {
-        //   skipped_last_frame = false;
-        decoder.decodeFrame((uint8_t *)vidbuf, actual_video_size, output_buf, output_buf_size, draw, iskeyframe);
-        total_decode_video_ms += millis() - curr_ms;
-        curr_ms = millis();
-        // }
-        // else
-        // {
-        //   ++skipped_frames;
-        // }
+        ++skipped_frames;
+        skipped_last_frame = true;
+        // Serial.printf("Skip frame %d > %d\n", millis(), next_frame_ms);
       }
-      while (millis() < next_frame_ms)
-      {
-        vTaskDelay(pdMS_TO_TICKS(1));
-      }
-      // }
-      // else
-      // {
-      //   ++skipped_frames;
-      //   skipped_last_frame = true;
-      //   // Serial.printf("Skip frame %d > %d\n", millis(), next_frame_ms);
-      // }
 
       ++curr_frame;
       curr_ms = millis();
@@ -243,7 +236,6 @@ void loop()
       int played_frames = total_frames - skipped_frames;
       float fps = 1000.0 * played_frames / time_used;
       total_decode_audio_ms -= total_play_audio_ms;
-      total_decode_video_ms -= total_show_video_ms;
       Serial.printf("Played frames: %d\n", played_frames);
       Serial.printf("Skipped frames: %d (%0.1f %%)\n", skipped_frames, 100.0 * skipped_frames / total_frames);
       Serial.printf("Time used: %d ms\n", time_used);
