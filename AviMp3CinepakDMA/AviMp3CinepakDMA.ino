@@ -28,6 +28,10 @@ extern "C"
 #define GFX_DEV_DEVICE LILYGO_T_DECK
 #define GFX_EXTRA_PRE_INIT()                \
   {                                         \
+    pinMode(TDECK_SDCARD_CS, OUTPUT);       \
+    digitalWrite(TDECK_SDCARD_CS, HIGH);    \
+    pinMode(TDECK_RADIO_CS, OUTPUT);        \
+    digitalWrite(TDECK_RADIO_CS, HIGH);     \
     pinMode(TDECK_PERI_POWERON, OUTPUT);    \
     digitalWrite(TDECK_PERI_POWERON, HIGH); \
     delay(500);                             \
