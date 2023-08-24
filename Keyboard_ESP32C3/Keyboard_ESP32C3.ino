@@ -17,7 +17,7 @@
 #define keyborad_BL_PIN 9
 #define I2C_SDA 2
 #define I2C_SCL 10
-
+#define I2C_FREQ 800000UL
 #include "Wire.h"
 
 uint8_t rows[] = {0, 3, 19, 12, 18, 6, 7};
@@ -132,7 +132,7 @@ void setup()
 
     Serial.setDebugOutput(true);
     Wire.onRequest(onRequest);
-    Wire.begin((uint8_t)I2C_DEV_ADDR, I2C_SDA, I2C_SCL, 100000UL);
+    Wire.begin((uint8_t)I2C_DEV_ADDR, I2C_SDA, I2C_SCL, I2C_FREQ);
 
     Serial.println("Starting keyboard work!");
     pinMode(keyborad_BL_PIN, OUTPUT);

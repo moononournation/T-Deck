@@ -278,7 +278,7 @@ extern "C" uint32_t controller_read_input()
 
 extern "C" void controller_init()
 {
-  Wire.begin(HW_CONTROLLER_I2C_SDA, HW_CONTROLLER_I2C_SCL);
+  Wire.begin(HW_CONTROLLER_I2C_SDA, HW_CONTROLLER_I2C_SCL, HW_CONTROLLER_I2C_FREQ);
 
   // Check keyboard
   Wire.requestFrom(TDECK_KEYBOARD_ADDR, 1);
@@ -303,16 +303,16 @@ extern "C" uint32_t controller_read_input()
       Serial.printf("key: %d\n", key);
       switch (key)
       {
-      case 'w': // up
+      case 'e': // up
         bit = (1 << 0);
         break;
-      case 'z': // down
+      case 'x': // down
         bit = (1 << 1);
         break;
-      case 'a': // left
+      case 's': // left
         bit = (1 << 2);
         break;
-      case 'd': // right
+      case 'f': // right
         bit = (1 << 3);
         break;
       case ' ': // select
@@ -321,16 +321,22 @@ extern "C" uint32_t controller_read_input()
       case 13: // enter -> start
         bit = (1 << 5);
         break;
-      case 'k': // A
+      case 'i': // A
+      case 'o':
+      case 'k':
+      case 'l':
         bit = (1 << 6);
         break;
-      case 'l': // B
+      case 'h': // B
+      case 'j':
+      case 'b':
+      case 'n':
         bit = (1 << 7);
         break;
-      case 'o': // X
+      case 'u': // X
         bit = (1 << 8);
         break;
-      case 'p': // Y
+      case 'y': // Y
         bit = (1 << 9);
         break;
       }
