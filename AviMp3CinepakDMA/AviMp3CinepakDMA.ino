@@ -1,5 +1,5 @@
-/*
- * require libraries:
+/***
+ * Required libraries:
  * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * avilib: https://github.com/lanyou1900/avilib.git
  * libhelix: https://github.com/pschatzmann/arduino-libhelix.git
@@ -9,10 +9,9 @@ const char *root = "/root";
 const char *avi_file = "/root/AviMp3Cinepak240p30fps.avi";
 
 #include <WiFi.h>
+
 #include <FFat.h>
 #include <LittleFS.h>
-#include <SD_MMC.h>
-#include <SD.h>
 
 extern "C"
 {
@@ -101,13 +100,16 @@ void setup()
   ledcWrite(0, 191);
 #endif
 
+  gfx->println("Init FS");
   if (!FFat.begin(false, root))
   // if (!LittleFS.begin(false, root))
   {
-    Serial.println(F("ERROR: File system mount failed!"));
+    Serial.println("ERROR: File system mount failed!");
+    gfx->println("ERROR: File system mount failed!");
   }
   else
   {
+    gfx->printf("Open audio file: %s", avi_file);
     a = AVI_open_input_file(avi_file, 1);
 
     if (a)
