@@ -160,6 +160,14 @@ void loop()
     readMatrix();
     printMatrix();
 
+#ifdef CONTINUOUS_SEND_PRESSING
+    if (keyActive(0, 4) && keyPressed(3, 4))
+    { // Alt+B
+        Serial.println("Alt+B");
+        BL_state = !BL_state;
+        set_keyborad_BL(BL_state);
+    }
+#else
     // key 3,3 is the enter key
     if (keyPressed(3, 3))
     {
@@ -185,58 +193,75 @@ void loop()
         comdata = (char)0x0C;
         comdata_flag = true;
     }
+#endif
 }
 
 void onRequest()
 {
 #ifdef CONTINUOUS_SEND_PRESSING
-    for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+    char keycode;
+    if (keyActive(0, 4)) // Alt key pressing
     {
-        for (int colIndex = 0; colIndex < colCount; colIndex++)
+        if (keyActive(2, 2))
         {
-            // we only want to print if the key is pressed and it is a printable character
-            if ((keys[colIndex][rowIndex] == true) && isPrintableKey(colIndex, rowIndex))
-            {
-                char toPrint;
-                if (symbolSelected)
-                {
-                    symbolSelected = false;
-                    toPrint = char(keyboard_symbol[colIndex][rowIndex]);
-                }
-                else
-                {
-                    toPrint = char(keyboard[colIndex][rowIndex]);
-                }
-
-                // keys 1,6 and 2,3 are Shift keys, so we want to upper case
-                if (keyActive(1, 6) || keyActive(2, 3))
-                {
-                    toPrint = (char)((int)toPrint - 32);
-                }
-
-                Wire.print((char)toPrint);
-                Serial.print("toPrint: ");
-                Serial.println(toPrint);
-            }
+            keycode = 0x0C; // Alt+T -> TAB
+            Wire.print((char)keycode);
+            Serial.println("key: Alt+T");
+        }
+        else if (keyActive(2, 5))
+        {
+            keycode = 0x0C; // Alt+C -> FF
+            Wire.print((char)keycode);
+            Serial.println("key: Alt+C");
         }
     }
-    if (comdata_flag)
+    else if (keyActive(4, 3))
     {
-        if (
-            (comdata == 0x08)     // backspace
-            || (comdata == 0x0C)  // Alt+C
-            || (comdata == 0x0D)) // enter key
-        {
-            Wire.print(comdata);
-            comdata_flag = false;
-            Serial.print("comdata: ");
-            Serial.println(comdata);
-        }
+        keycode = 0x08; // backspace
+        Wire.print((char)keycode);
+        Serial.println("key: backspace");
+    }
+    else if (keyActive(3, 3))
+    {
+        keycode = 0x0D; // enter
+        Wire.print((char)keycode);
+        Serial.println("key: enter");
     }
     else
     {
-        Wire.print((char)0x00);
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            for (int colIndex = 0; colIndex < colCount; colIndex++)
+            {
+                // we only want to print if the key is pressed and it is a printable character
+                if (keyActive(colIndex, rowIndex))
+                {
+                    if (keyboard[colIndex][rowIndex] != NULL)
+                    {
+                        if (keyActive(0, 2)) // symbol
+                        {
+                            keycode = char(keyboard_symbol[colIndex][rowIndex]);
+                        }
+                        else
+                        {
+                            keycode = char(keyboard[colIndex][rowIndex]);
+
+                            // keys 1,6 and 2,3 are Shift keys, so we want to upper case
+                            if (keyActive(1, 6) || keyActive(2, 3))
+                            {
+                                keycode = (char)((int)keycode - 32);
+                            }
+                        }
+
+                        Wire.print((char)keycode);
+                        Serial.print("key: ");
+                        Serial.println(keycode);
+                    }
+                }
+            }
+        }
     }
+    Wire.print((char)0x00);
 #else
     if (comdata_flag)
     {
@@ -303,7 +328,7 @@ bool keyPressed(int colIndex, int rowIndex)
     return changedValue[colIndex][rowIndex] && keys[colIndex][rowIndex] == true;
 }
 
-bool keyActive(int colIndex, int rowIndex)
+inline bool keyActive(int colIndex, int rowIndex)
 {
     return keys[colIndex][rowIndex] == true;
 }
