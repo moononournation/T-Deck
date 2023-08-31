@@ -204,7 +204,7 @@ void onRequest()
     {
         if (keyActive(2, 2))
         {
-            keycode = 0x0C; // Alt+T -> TAB
+            keycode = 0x09; // Alt+T -> TAB
             Wire.print((char)keycode);
             Serial.println("key: Alt+T");
         }
