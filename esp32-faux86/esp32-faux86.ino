@@ -5,8 +5,8 @@
  */
 
 #include "TDECK_PINS.h"
-#define TRACK_SPEED 3
-#define KEY_SCAN_MS_INTERVAL 100
+#define TRACK_SPEED 2
+#define KEY_SCAN_MS_INTERVAL 125
 
 /*******************************************************************************
  * Start of Arduino_GFX setting
@@ -189,7 +189,7 @@ void loop()
 	vm86->simulate();
 	hostInterface.tick();
 
-	if (millis() > next_key_scan_ms)
+	if (keyboard_interrupted || (millis() > next_key_scan_ms))
 	{
 		Wire.requestFrom(TDECK_KEYBOARD_ADDR, 1);
 		while (Wire.available() > 0)
@@ -201,9 +201,10 @@ void loop()
 				Serial.printf("key: %c, keyxt: %0x\n", key, keyxt);
 				vm86->input.handleKeyDown(keyxt);
 				vm86->input.handleKeyUp(keyxt);
+				next_key_scan_ms = millis() + KEY_SCAN_MS_INTERVAL;
 			}
 		}
-		next_key_scan_ms = millis() + KEY_SCAN_MS_INTERVAL;
+		keyboard_interrupted = false;
 	}
 
 	if (trackball_interrupted)
@@ -230,8 +231,11 @@ void loop()
 	}
 	else if (mouse_downed)
 	{
-		Serial.println("vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);");
-		vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);
-		mouse_downed = false;
+		if (digitalRead(TDECK_TRACKBALL_CLICK) == HIGH)
+		{
+			Serial.println("vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);");
+			vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);
+			mouse_downed = false;
+		}
 	}
 }
