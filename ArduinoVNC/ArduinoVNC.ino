@@ -232,7 +232,7 @@ void setup(void)
   ledcWrite(0, 191);
 #endif
 
-  // Init touch device
+  // Init trackball
   pinMode(TDECK_TRACKBALL_UP, INPUT_PULLUP);
   attachInterrupt(TDECK_TRACKBALL_UP, ISR_up, FALLING);
   pinMode(TDECK_TRACKBALL_DOWN, INPUT_PULLUP);
