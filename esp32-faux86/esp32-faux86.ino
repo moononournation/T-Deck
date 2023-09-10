@@ -4,15 +4,9 @@
  * Faux86-remake: https://github.com/moononournation/Faux86-remake.git
  */
 
-#include <FFat.h>
-#include <VM.h>
-
-#include "asciivga_dat.h"
-#include "pcxtbios_bin.h"
-#include "rombasic_bin.h"
-#include "videorom_bin.h"
-
-#include "ArduinoInterface.h"
+#include "TDECK_PINS.h"
+#define TRACK_SPEED 3
+#define KEY_SCAN_MS_INTERVAL 100
 
 /*******************************************************************************
  * Start of Arduino_GFX setting
@@ -39,13 +33,71 @@ Arduino_TFT *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotat
  * End of Arduino_GFX setting
  ******************************************************************************/
 
+/*******************************************************************************
+ * Please config the touch panel in touch.h
+ ******************************************************************************/
+#include "touch.h"
+
+#include "keymap.h"
+
+#include <WiFi.h>
+#include <FFat.h>
+#include <VM.h>
+
+#include "asciivga_dat.h"
+#include "pcxtbios_bin.h"
+#include "rombasic_bin.h"
+#include "videorom_bin.h"
+
+bool keyboard_interrupted = false;
+void IRAM_ATTR ISR_key()
+{
+	keyboard_interrupted = true;
+}
+unsigned long next_key_scan_ms = 0;
+bool trackball_interrupted = false;
+int16_t trackball_up_count = 1;
+int16_t trackball_down_count = 1;
+int16_t trackball_left_count = 1;
+int16_t trackball_right_count = 1;
+int16_t trackball_click_count = 0;
+bool mouse_downed = false;
+void IRAM_ATTR ISR_up()
+{
+	trackball_interrupted = true;
+	trackball_up_count <<= TRACK_SPEED;
+}
+void IRAM_ATTR ISR_down()
+{
+	trackball_interrupted = true;
+	trackball_down_count <<= TRACK_SPEED;
+}
+void IRAM_ATTR ISR_left()
+{
+	trackball_interrupted = true;
+	trackball_left_count <<= TRACK_SPEED;
+}
+void IRAM_ATTR ISR_right()
+{
+	trackball_interrupted = true;
+	trackball_right_count <<= TRACK_SPEED;
+}
+void IRAM_ATTR ISR_click()
+{
+	trackball_interrupted = true;
+	++trackball_click_count;
+}
+
+#include "ArduinoInterface.h"
 Faux86::VM *vm86;
 Faux86::ArduinoHostSystemInterface hostInterface(gfx);
 
 void setup()
 {
+	WiFi.mode(WIFI_OFF);
+
 	Serial.begin(115200);
-	Serial.setDebugOutput(true);
+	// Serial.setDebugOutput(true);
 	// while(!Serial);
 	Serial.println("esp32-faux86");
 
@@ -64,6 +116,30 @@ void setup()
 	pinMode(GFX_BL, OUTPUT);
 	digitalWrite(GFX_BL, HIGH);
 #endif
+
+	Serial.println("Init touchscreen");
+	touch_init(gfx->width(), gfx->height(), gfx->getRotation());
+
+	Serial.println("Init LILYGO Keyboard");
+	pinMode(TDECK_KEYBOARD_INT, INPUT_PULLUP);
+	attachInterrupt(TDECK_KEYBOARD_INT, ISR_key, FALLING);
+	Wire.requestFrom(TDECK_KEYBOARD_ADDR, 1);
+	if (Wire.read() == -1)
+	{
+		Serial.println("LILYGO Keyboad not online!");
+	}
+
+	// Init trackball
+	pinMode(TDECK_TRACKBALL_UP, INPUT_PULLUP);
+	attachInterrupt(TDECK_TRACKBALL_UP, ISR_up, FALLING);
+	pinMode(TDECK_TRACKBALL_DOWN, INPUT_PULLUP);
+	attachInterrupt(TDECK_TRACKBALL_DOWN, ISR_down, FALLING);
+	pinMode(TDECK_TRACKBALL_LEFT, INPUT_PULLUP);
+	attachInterrupt(TDECK_TRACKBALL_LEFT, ISR_left, FALLING);
+	pinMode(TDECK_TRACKBALL_RIGHT, INPUT_PULLUP);
+	attachInterrupt(TDECK_TRACKBALL_RIGHT, ISR_right, FALLING);
+	pinMode(TDECK_TRACKBALL_CLICK, INPUT_PULLUP);
+	attachInterrupt(TDECK_TRACKBALL_CLICK, ISR_click, FALLING);
 
 	if (!FFat.begin(false))
 	{
@@ -112,4 +188,50 @@ void loop()
 {
 	vm86->simulate();
 	hostInterface.tick();
+
+	if (millis() > next_key_scan_ms)
+	{
+		Wire.requestFrom(TDECK_KEYBOARD_ADDR, 1);
+		while (Wire.available() > 0)
+		{
+			char key = Wire.read();
+			if (key != 0)
+			{
+				uint16_t keyxt = ascii2xtMapping[key];
+				Serial.printf("key: %c, keyxt: %0x\n", key, keyxt);
+				vm86->input.handleKeyDown(keyxt);
+				vm86->input.handleKeyUp(keyxt);
+			}
+		}
+		next_key_scan_ms = millis() + KEY_SCAN_MS_INTERVAL;
+	}
+
+	if (trackball_interrupted)
+	{
+		if (trackball_click_count > 0)
+		{
+			Serial.println("vm86->mouse.handleButtonDown(Faux86::SerialMouse::ButtonType::Left);");
+			vm86->mouse.handleButtonDown(Faux86::SerialMouse::ButtonType::Left);
+			mouse_downed = true;
+		}
+		int16_t x_delta = trackball_right_count - trackball_left_count;
+		int16_t y_delta = trackball_down_count - trackball_up_count;
+		if ((x_delta != 0) || (y_delta != 0))
+		{
+			Serial.printf("x_delta: %d, y_delta: %d\n", x_delta, y_delta);
+			vm86->mouse.handleMove(x_delta, y_delta);
+		}
+		trackball_interrupted = false;
+		trackball_up_count = 1;
+		trackball_down_count = 1;
+		trackball_left_count = 1;
+		trackball_right_count = 1;
+		trackball_click_count = 0;
+	}
+	else if (mouse_downed)
+	{
+		Serial.println("vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);");
+		vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);
+		mouse_downed = false;
+	}
 }
