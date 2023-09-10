@@ -27,41 +27,17 @@
 #include <sys/time.h>
 #include "StdioDiskInterface.h"
 
-struct ArduinoWindow;
-struct ArduinoRenderer;
-struct ArduinoTexture;
-struct ArduinoSurface;
-
 namespace Faux86
 {
-	class VM;
-
 	class ArduinoFrameBufferInterface : public FrameBufferInterface
 	{
 	public:
 		virtual void setGfx(Arduino_TFT *gfx);
-		virtual void init(uint32_t desiredWidth, uint32_t desiredHeight) override;
-		virtual void resize(uint32_t desiredWidth, uint32_t desiredHeight) override;
 		virtual RenderSurface *getSurface() override;
 		virtual void setPalette(Palette *palette) override;
-		// virtual void present() override;
-		virtual void blit(uint16_t* pixels, int w, int h, int stride) override;
-
-		// void black_white_dither(ArduinoSurface* s);
-		void SetColorEmulation(uint8_t _colormode);
-
-		ArduinoWindow *sdlWindow = nullptr;
-		uint8_t colorEmulation = 0;
+		virtual void blit(uint16_t *pixels, int w, int h, int stride) override;
 
 	private:
-		uint32_t fbwidth;
-		uint32_t fbheight;
-
-		ArduinoRenderer *appRenderer = nullptr;
-		ArduinoSurface *screenPixels = nullptr;
-		ArduinoSurface *screenSurface = nullptr;
-		ArduinoTexture *screenTexture = nullptr;
-
 		RenderSurface renderSurface;
 
 		Arduino_TFT *_gfx;
@@ -90,7 +66,6 @@ namespace Faux86
 	public:
 		ArduinoHostSystemInterface(Arduino_TFT *gfx);
 		virtual ~ArduinoHostSystemInterface();
-		// virtual void init(uint32_t desiredWidth, uint32_t desiredHeight, bool showmenu) override;
 		virtual void init(VM *inVM) override;
 		virtual void resize(uint32_t desiredWidth, uint32_t desiredHeight) override;
 
@@ -99,27 +74,13 @@ namespace Faux86
 		virtual TimerInterface &getTimer() override { return timerInterface; }
 		virtual DiskInterface *openFile(const char *filename) override;
 
-		// void tick(VM& vm);
 		void tick();
-		void updatetitle();
-		void setrendermode(uint8_t _mode);
-		void setcolormode(uint8_t _mode);
-		void sendkeydown(uint8_t scancode);
-		void sendkeyup(uint8_t scancode);
-
-		ArduinoWindow *sdlWindow = nullptr;
 
 	private:
-		// VM& vm;
-		char *sdltitle;
-
-		uint8_t translatescancode(uint16_t keyval);
-
 		ArduinoAudioInterface audioInterface;
 		ArduinoFrameBufferInterface frameBufferInterface;
 		ArduinoTimerInterface timerInterface;
 
 		Arduino_TFT *_gfx;
 	};
-
 };

@@ -80,16 +80,6 @@ void ArduinoFrameBufferInterface::setGfx(Arduino_TFT *gfx)
 	_gfx = gfx;
 }
 
-void ArduinoFrameBufferInterface::init(uint32_t desiredWidth, uint32_t desiredHeight)
-{
-	log_d("ArduinoFrameBufferInterface::init(%d, %d)", desiredWidth, desiredHeight);
-}
-
-void ArduinoFrameBufferInterface::resize(uint32_t desiredWidth, uint32_t desiredHeight)
-{
-	log_d("ArduinoFrameBufferInterface::resize(%d, %d)", desiredWidth, desiredHeight);
-}
-
 RenderSurface *ArduinoFrameBufferInterface::getSurface()
 {
 	log_d("ArduinoFrameBufferInterface::getSurface()");
@@ -149,15 +139,10 @@ void ArduinoFrameBufferInterface::blit(uint16_t *pixels, int w, int h, int strid
 	_gfx->endWrite();
 }
 
-void ArduinoFrameBufferInterface::SetColorEmulation(uint8_t _colormode)
-{
-	log_d("ArduinoFrameBufferInterface::SetColorEmulation(%d)", _colormode);
-}
-
 uint64_t ArduinoTimerInterface::getHostFreq()
 {
 	// log_v("ArduinoTimerInterface::getHostFreq()");
-	return 1000;
+	return CONFIG_FREERTOS_HZ;
 }
 
 uint64_t ArduinoTimerInterface::getTicks()
@@ -166,40 +151,9 @@ uint64_t ArduinoTimerInterface::getTicks()
 	return xTaskGetTickCount();
 }
 
-uint8_t ArduinoHostSystemInterface::translatescancode(uint16_t keyval)
-{
-	log_d("ArduinoHostSystemInterface::translatescancode(%d)", keyval);
-	return keyval;
-}
-
 void ArduinoHostSystemInterface::tick()
 {
 	// log_d("ArduinoHostSystemInterface::tick");
-}
-
-void ArduinoHostSystemInterface::updatetitle()
-{
-	log_d("ArduinoHostSystemInterface::updatetitle()");
-}
-
-void ArduinoHostSystemInterface::setcolormode(uint8_t _mode)
-{
-	log_d("ArduinoHostSystemInterface::setcolormode(%d)", _mode);
-}
-
-void ArduinoHostSystemInterface::sendkeydown(uint8_t scancode)
-{
-	log_d("ArduinoHostSystemInterface::sendkeydown(%d)", scancode);
-}
-
-void ArduinoHostSystemInterface::sendkeyup(uint8_t scancode)
-{
-	log_d("ArduinoHostSystemInterface::sendkeyup(%d)", scancode);
-}
-
-void ArduinoHostSystemInterface::setrendermode(uint8_t _mode)
-{
-	log_d("ArduinoHostSystemInterface::setrendermode(%d)", _mode);
 }
 
 void Faux86::log(Faux86::LogChannel channel, const char *message, ...)
