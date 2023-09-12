@@ -6,7 +6,7 @@
 
 #include "TDECK_PINS.h"
 #define TRACK_SPEED 2
-#define KEY_SCAN_MS_INTERVAL 125
+#define KEY_SCAN_MS_INTERVAL 200
 
 /*******************************************************************************
  * Start of Arduino_GFX setting
@@ -27,8 +27,8 @@
 		delay(500);                                      \
 	}
 #define GFX_BL 42
-Arduino_DataBus *bus = new Arduino_ESP32SPI(11 /* DC */, 12 /* CS */, 40 /* SCK */, 41 /* MOSI */, GFX_NOT_DEFINED /* MISO */);
-Arduino_TFT *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
+Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(11 /* DC */, 12 /* CS */, 40 /* SCK */, 41 /* MOSI */, GFX_NOT_DEFINED /* MISO */);
+Arduino_TFT *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, true /* IPS */);
 /*******************************************************************************
  * End of Arduino_GFX setting
  ******************************************************************************/
@@ -148,38 +148,54 @@ void setup()
 
 	Faux86::Config vmConfig(&hostInterface);
 
-	vmConfig.singleThreaded = true;
+	/* CPU settings */
+	vmConfig.singleThreaded = true; // only WIN32 support multithreading
+	vmConfig.slowSystem = true; // slow system will reserve more time for audio, if enabled
+	vmConfig.cpuSpeed = 0; // no limit
+
+	/* Video settings */
+	vmConfig.frameDelay = 200;	// 200ms 5fps
+	vmConfig.framebuffer.width = 720;
+	vmConfig.framebuffer.height = 480;
+
+	/* Audio settings */
 	vmConfig.enableAudio = false;
 	vmConfig.useDisneySoundSource = false;
 	vmConfig.useSoundBlaster = false;
 	vmConfig.useAdlib = false;
 	vmConfig.usePCSpeaker = true;
-	vmConfig.slowSystem = true;
-	vmConfig.frameDelay = 250;				 // 250ms 4fps
 	vmConfig.audio.sampleRate = 22050; // 32000 //44100 //48000;
 	vmConfig.audio.latency = 200;
-	vmConfig.framebuffer.width = 720;
-	vmConfig.framebuffer.height = 480;
-	vmConfig.cpuSpeed = 0; // no limit
 
+	/* set BIOS ROM */
 	// vmConfig.biosFile = hostInterface.openFile("/ffat/pcxtbios.bin");
-	// vmConfig.romBasicFile = hostInterface.openFile("/ffat/rombasic.bin");
-	// vmConfig.videoRomFile = hostInterface.openFile("/ffat/videorom.bin");
-	// vmConfig.asciiFile = hostInterface.openFile("/ffat/asciivga.dat");
 	vmConfig.biosFile = new Faux86::EmbeddedDisk(pcxtbios_bin, pcxtbios_bin_len);
+
+	/* set Basic ROM */
+	// vmConfig.romBasicFile = hostInterface.openFile("/ffat/rombasic.bin");
 	vmConfig.romBasicFile = new Faux86::EmbeddedDisk(rombasic_bin, rombasic_bin_len);
+
+	/* set Video ROM */
+	// vmConfig.videoRomFile = hostInterface.openFile("/ffat/videorom.bin");
 	vmConfig.videoRomFile = new Faux86::EmbeddedDisk(videorom_bin, videorom_bin_len);
+
+	/* set ASCII FONT Data */
+	// vmConfig.asciiFile = hostInterface.openFile("/ffat/asciivga.dat");
 	vmConfig.asciiFile = new Faux86::EmbeddedDisk(asciivga_dat, asciivga_dat_len);
 
+	/* floppy drive image */
 	// vmConfig.diskDriveA = hostInterface.openFile("/ffat/fd0.img");
-	// vmConfig.bootDrive = 0; // DRIVE_A;
+
+	/* harddisk drive image */
 	vmConfig.diskDriveC = hostInterface.openFile("/ffat/hd0_12m.img");
+
+	/* set boot drive */
+	// vmConfig.bootDrive = 0; // DRIVE_A;
 	vmConfig.bootDrive = 128U; // DRIVE_C;
 
 	vm86 = new Faux86::VM(vmConfig);
 	if (vm86->init())
 	{
-		// hostInterface.init(vmConfig.resw, vmConfig.resh, vmConfig.enableMenu);
 		hostInterface.init(vm86);
 	}
 }
@@ -187,8 +203,9 @@ void setup()
 void loop()
 {
 	vm86->simulate();
-	hostInterface.tick();
+	// hostInterface.tick();
 
+	/* handle keyboard input */
 	if (keyboard_interrupted || (millis() > next_key_scan_ms))
 	{
 		Wire.requestFrom(TDECK_KEYBOARD_ADDR, 1);
@@ -200,6 +217,7 @@ void loop()
 				uint16_t keyxt = ascii2xtMapping[key];
 				Serial.printf("key: %c, keyxt: %0x\n", key, keyxt);
 				vm86->input.handleKeyDown(keyxt);
+				vm86->simulate();
 				vm86->input.handleKeyUp(keyxt);
 				next_key_scan_ms = millis() + KEY_SCAN_MS_INTERVAL;
 			}
@@ -207,6 +225,7 @@ void loop()
 		keyboard_interrupted = false;
 	}
 
+	/* handle trackball input */
 	if (trackball_interrupted)
 	{
 		if (trackball_click_count > 0)
@@ -231,7 +250,7 @@ void loop()
 	}
 	else if (mouse_downed)
 	{
-		if (digitalRead(TDECK_TRACKBALL_CLICK) == HIGH)
+		if (digitalRead(TDECK_TRACKBALL_CLICK) == HIGH) // released
 		{
 			Serial.println("vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);");
 			vm86->mouse.handleButtonUp(Faux86::SerialMouse::ButtonType::Left);
