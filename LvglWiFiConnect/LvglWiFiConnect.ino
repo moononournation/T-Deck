@@ -8,7 +8,6 @@
  * LVGL: https://github.com/lvgl/lvgl.git
  *
  * Touch libraries:
- * XPT2046: https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
  * TouchLib: https://github.com/mmMicky/TouchLib.git
  *
  * LVGL Configuration file:
@@ -39,7 +38,8 @@
 #include "ui.h"
 
 #include "TDECK_PINS.h"
-#include "WiFi.h"
+
+#include <WiFi.h>
 
 /*******************************************************************************
  * Start of Arduino_GFX setting

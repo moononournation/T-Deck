@@ -7,7 +7,6 @@
  * ArduinoVNC: https://github.com/moononournation/arduinoVNC.git
  *
  * Touch libraries:
- * XPT2046: https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
  * TouchLib: https://github.com/mmMicky/TouchLib.git
  *
  * LVGL Configuration file:
