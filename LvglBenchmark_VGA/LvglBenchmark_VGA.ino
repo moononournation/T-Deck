@@ -3,7 +3,8 @@
  * This is a benchmark demo for LVGL - Light and Versatile Graphics Library
  * import from: https://github.com/lvgl/lv_demos.git
  *
- * Dependent libraries:
+ * Required libraries:
+ * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * LVGL: https://github.com/lvgl/lvgl.git
  *
  * LVGL Configuration file:
@@ -28,7 +29,16 @@
  * Customize font size:
  * #define LV_FONT_MONTSERRAT_12 1
  * #define LV_FONT_DEFAULT &lv_font_montserrat_12
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
  ******************************************************************************/
+
 #include "lv_demo_benchmark.h"
 
 #include "TDECK_PINS.h"

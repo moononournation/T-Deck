@@ -1,8 +1,18 @@
-/***
+/*******************************************************************************
+ * Arduino ESP32 Faux86
+ *
  * Required libraries:
  * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * Faux86-remake: https://github.com/moononournation/Faux86-remake.git
- */
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
+ ******************************************************************************/
 
 #include "TDECK_PINS.h"
 #define TRACK_SPEED 2
@@ -28,7 +38,7 @@
 	}
 #define GFX_BL 42
 Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(11 /* DC */, 12 /* CS */, 40 /* SCK */, 41 /* MOSI */, GFX_NOT_DEFINED /* MISO */);
-Arduino_TFT *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, true /* IPS */);
+Arduino_TFT *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
 /*******************************************************************************
  * End of Arduino_GFX setting
  ******************************************************************************/
@@ -150,11 +160,11 @@ void setup()
 
 	/* CPU settings */
 	vmConfig.singleThreaded = true; // only WIN32 support multithreading
-	vmConfig.slowSystem = true; // slow system will reserve more time for audio, if enabled
-	vmConfig.cpuSpeed = 0; // no limit
+	vmConfig.slowSystem = true;			// slow system will reserve more time for audio, if enabled
+	vmConfig.cpuSpeed = 0;					// no limit
 
 	/* Video settings */
-	vmConfig.frameDelay = 200;	// 200ms 5fps
+	vmConfig.frameDelay = 200; // 200ms 5fps
 	vmConfig.framebuffer.width = 720;
 	vmConfig.framebuffer.height = 480;
 

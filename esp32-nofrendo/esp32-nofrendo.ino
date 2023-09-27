@@ -1,6 +1,21 @@
-/* Arduino Nofrendo
+/*******************************************************************************
+ * Arduino ESP32 Nofrendo
+ *
+ * Required libraries:
+ * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
+ * arduino-nofrendo: https://github.com/moononournation/arduino-nofrendo.git
+ *
  * Please check hw_config.h and display.cpp for configuration details
- */
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
+ ******************************************************************************/
+
 #include <esp_wifi.h>
 #include <esp_task_wdt.h>
 #include <FFat.h>

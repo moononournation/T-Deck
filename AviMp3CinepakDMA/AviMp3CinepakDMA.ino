@@ -1,9 +1,19 @@
-/***
+/*******************************************************************************
+ * AVI Player - MP3, Cinepak, DMA
+ *
  * Required libraries:
  * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * avilib: https://github.com/lanyou1900/avilib.git
  * libhelix: https://github.com/pschatzmann/arduino-libhelix.git
- */
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
+ ******************************************************************************/
 
 const char *root = "/root";
 const char *avi_file = "/root/AviMp3Cinepak240p30fps.avi";

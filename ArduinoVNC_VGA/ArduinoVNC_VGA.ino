@@ -2,12 +2,21 @@
  * Arduino VNC
  * This is a T-Deck version VNC sample
  *
- * Dependent libraries:
+ * Required libraries:
+ * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * ArduinoVNC: https://github.com/moononournation/arduinoVNC.git
  *
  * Setup steps:
  * 1. Fill your own SSID_NAME, SSID_PASSWORD, VNC_IP, VNC_PORT and VNC_PASSWORD
  * 2. Change your LCD parameters in Arduino_GFX setting
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
  ******************************************************************************/
 
 /* WiFi settings */

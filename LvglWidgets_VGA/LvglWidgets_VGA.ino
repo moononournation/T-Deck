@@ -3,9 +3,10 @@
  * This is a widgets demo for LVGL - Light and Versatile Graphics Library
  * import from: https://github.com/lvgl/lv_demos.git
  *
- * Dependent libraries:
+ * Required libraries:
+ * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * LVGL: https://github.com/lvgl/lvgl.git
- * 
+ *
  * Touch libraries:
  * XPT2046: https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
  * TouchLib: https://github.com/mmMicky/TouchLib.git
@@ -25,7 +26,16 @@
  *
  * Enable LVGL Demo Widgets
  * #define LV_USE_DEMO_WIDGETS 1
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
  ******************************************************************************/
+
 #include "lv_demo_widgets.h"
 
 #include "TDECK_PINS.h"

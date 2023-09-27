@@ -3,7 +3,8 @@
  * This is a simple example for LVGL - Light and Versatile Graphics Library
  * import from: https://github.com/lvgl/lv_demos.git
  *
- * Dependent libraries:
+ * Required libraries:
+ * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
  * LVGL: https://github.com/lvgl/lvgl.git
  *
  * Touch libraries:
@@ -24,7 +25,16 @@
  * For SPI/parallel 8 display set color swap can be faster, parallel 16/RGB screen don't swap!
  * #define LV_COLOR_16_SWAP   1 // for SPI and parallel 8
  * #define LV_COLOR_16_SWAP   0 // for parallel 16 and RGB
+ *
+ * Arduino IDE Settings for T-Deck
+ * Board:            "ESP32S3 Dev Module"
+ * USB CDC On Boot:  "Enable"
+ * Flash Mode:       "QIO 120MHz"
+ * Flash Size:       "16MB(128Mb)"
+ * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
+ * PSRAM:            "OPI PSRAM"
  ******************************************************************************/
+
 #include <lvgl.h>
 #include "ui.h"
 
