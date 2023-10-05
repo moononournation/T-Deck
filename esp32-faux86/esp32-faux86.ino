@@ -127,6 +127,8 @@ void setup()
 	digitalWrite(GFX_BL, HIGH);
 #endif
 
+  Wire.begin(TDECK_I2C_SDA, TDECK_I2C_SCL, TDECK_I2C_FREQ);
+
 	Serial.println("Init touchscreen");
 	touch_init(gfx->width(), gfx->height(), gfx->getRotation());
 
@@ -203,8 +205,14 @@ void setup()
 	// vmConfig.bootDrive = 0; // DRIVE_A;
 	vmConfig.bootDrive = 128U; // DRIVE_C;
 
+  uint16_t *video_framebuffer = (uint16_t *)calloc(VGA_FRAMEBUFFER_WIDTH * VGA_FRAMEBUFFER_HEIGHT, sizeof(uint16_t));
+  if (!video_framebuffer)
+  {
+    Serial.println("Failed to allocate video_framebuffer");
+  }
+
 	vm86 = new Faux86::VM(vmConfig);
-	if (vm86->init())
+	if (vm86->init(video_framebuffer))
 	{
 		hostInterface.init(vm86);
 	}
@@ -225,7 +233,7 @@ void loop()
 			if (key != 0)
 			{
 				uint16_t keyxt = ascii2xtMapping[key];
-				Serial.printf("key: %c, keyxt: %0x\n", key, keyxt);
+				// Serial.printf("key: %c, keyxt: %0x\n", key, keyxt);
 				vm86->input.handleKeyDown(keyxt);
 				vm86->simulate();
 				vm86->input.handleKeyUp(keyxt);
