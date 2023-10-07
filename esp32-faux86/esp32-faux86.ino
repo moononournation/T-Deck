@@ -102,6 +102,8 @@ void IRAM_ATTR ISR_click()
 Faux86::VM *vm86;
 Faux86::ArduinoHostSystemInterface hostInterface(gfx);
 
+uint16_t *vga_framebuffer;
+
 void setup()
 {
 	WiFi.mode(WIFI_OFF);
@@ -205,14 +207,14 @@ void setup()
 	// vmConfig.bootDrive = 0; // DRIVE_A;
 	vmConfig.bootDrive = 128U; // DRIVE_C;
 
-  uint16_t *video_framebuffer = (uint16_t *)calloc(VGA_FRAMEBUFFER_WIDTH * VGA_FRAMEBUFFER_HEIGHT, sizeof(uint16_t));
-  if (!video_framebuffer)
+  vga_framebuffer = (uint16_t *)calloc(VGA_FRAMEBUFFER_WIDTH * VGA_FRAMEBUFFER_HEIGHT, sizeof(uint16_t));
+  if (!vga_framebuffer)
   {
-    Serial.println("Failed to allocate video_framebuffer");
+    Serial.println("Failed to allocate vga_framebuffer");
   }
 
 	vm86 = new Faux86::VM(vmConfig);
-	if (vm86->init(video_framebuffer))
+	if (vm86->init())
 	{
 		hostInterface.init(vm86);
 	}
