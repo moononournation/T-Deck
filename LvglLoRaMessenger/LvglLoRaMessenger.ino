@@ -60,7 +60,7 @@
     delay(500);                             \
   }
 #define GFX_BL TDECK_TFT_BACKLIGHT
-Arduino_DataBus *bus = new Arduino_HWSPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
+Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
 /*******************************************************************************
  * End of Arduino_GFX setting
@@ -292,6 +292,9 @@ void setup()
   // while(!Serial);
   Serial.println("Arduino LoRa Messenger");
 
+  // If display and SD shared same interface, init SPI first
+  SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
+
 #ifdef GFX_EXTRA_PRE_INIT
   GFX_EXTRA_PRE_INIT();
 #endif
@@ -388,22 +391,8 @@ void setup()
     lv_timer_handler(); /* let the GUI do its work */
   }
 
-  //! The board peripheral power control pin needs to be set to HIGH when using the peripheral
-  pinMode(TDECK_PERI_POWERON, OUTPUT);
-  digitalWrite(TDECK_PERI_POWERON, HIGH);
-
-  //! Set CS on all SPI buses to high level during initialization
-  pinMode(TDECK_SDCARD_CS, OUTPUT);
-  pinMode(TDECK_RADIO_CS, OUTPUT);
-  pinMode(TDECK_TFT_CS, OUTPUT);
-
   digitalWrite(TDECK_SDCARD_CS, HIGH);
-  digitalWrite(TDECK_RADIO_CS, HIGH);
   digitalWrite(TDECK_TFT_CS, HIGH);
-
-  pinMode(TDECK_SPI_MISO, INPUT_PULLUP);
-  // SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
-
   setupRadio();
 }
 
@@ -411,6 +400,10 @@ void loop()
 {
   lv_obj_invalidate(ui_TextMessages); // hack, it should be some sort of bug
   lv_timer_handler(); /* let the GUI do its work */
+
+  digitalWrite(TDECK_SDCARD_CS, HIGH);
+  digitalWrite(TDECK_TFT_CS, HIGH);
   loopRadio();
+
   delay(5);
 }

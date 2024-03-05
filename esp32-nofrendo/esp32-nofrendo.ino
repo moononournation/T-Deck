@@ -40,6 +40,9 @@ void setup()
 {
     Serial.begin(115200);
 
+    // If display and SD shared same interface, init SPI first
+    SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
+
     // turn off WiFi
     esp_wifi_deinit();
 

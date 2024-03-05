@@ -26,7 +26,7 @@ const char *mpeg_file = "/root/224x128.mpg";
     delay(500);                             \
   }
 #define GFX_BL TDECK_TFT_BACKLIGHT
-Arduino_DataBus *bus = new Arduino_HWSPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
+Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, true /* IPS */);
 /*******************************************************************************
    End of Arduino_GFX setting
@@ -94,6 +94,7 @@ void my_video_callback(plm_t *plm, plm_frame_t *frame, void *user)
   YCbCr2RGB565Be(frame->y.data, frame->cb.data, frame->cr.data, frame->width, frame->height, plm_buffer);
   // explicit disable SD before use display
   digitalWrite(TDECK_SDCARD_CS, HIGH);
+  digitalWrite(TDECK_RADIO_CS, HIGH);
   gfx->draw16bitBeRGBBitmap(0, 0, plm_buffer, plm_w, plm_h);
   ++decode_video_count;
 }
@@ -133,6 +134,9 @@ void setup(void)
   pinMode(GFX_BL, OUTPUT);
   digitalWrite(GFX_BL, HIGH);
 #endif
+
+  // If display and SD shared same interface, init SPI first
+  SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
 
   // if (!FFat.begin(false, root))
   // if (!LittleFS.begin(false, root))

@@ -5,7 +5,7 @@
 #define FSROOT "/fs"
 
 #define FILESYSTEM_BEGIN FFat.begin(false, FSROOT); FS filesystem = FFat;
-// #define FILESYSTEM_BEGIN SD.begin(TDECK_SDCARD_CS, SPI, 800000U); FS filesystem = SD;
+// #define FILESYSTEM_BEGIN SD.begin(TDECK_SDCARD_CS, SPI, 80000000); FS filesystem = SD;
 // #define FILESYSTEM_BEGIN SPIClass spi = SPIClass(HSPI); spi.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI, TDECK_SDCARD_CS); FS filesystem = SD;
 
 // enable audio

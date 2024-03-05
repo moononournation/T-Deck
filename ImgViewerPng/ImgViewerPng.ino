@@ -45,7 +45,7 @@
     delay(500);                             \
   }
 #define GFX_BL TDECK_TFT_BACKLIGHT
-Arduino_DataBus *bus = new Arduino_HWSPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
+Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
 /*******************************************************************************
  * End of Arduino_GFX setting
@@ -114,6 +114,8 @@ void PNGDraw(PNGDRAW *pDraw)
   // Serial.printf("Draw pos = 0,%d. size = %d x 1\n", pDraw->y, pDraw->iWidth);
   png.getLineAsRGB565(pDraw, usPixels, PNG_RGB565_LITTLE_ENDIAN, 0x00000000);
   png.getAlphaMask(pDraw, usMask, 1);
+  digitalWrite(TDECK_SDCARD_CS, HIGH);
+  digitalWrite(TDECK_RADIO_CS, HIGH);
   gfx->draw16bitRGBBitmapWithMask(xOffset, yOffset + pDraw->y, usPixels, usMask, pDraw->iWidth, 1);
 }
 
@@ -124,6 +126,7 @@ void setup()
   // while(!Serial);
   Serial.println("Arduino_GFX PNG Image Viewer example");
 
+  // If display and SD shared same interface, init SPI first
   SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
 
 #ifdef GFX_EXTRA_PRE_INIT
@@ -152,7 +155,6 @@ void setup()
   // if (!FFat.begin())
   // if (!LittleFS.begin())
   // if (!SPIFFS.begin())
-  digitalWrite(TDECK_SDCARD_CS, HIGH);
   digitalWrite(TDECK_RADIO_CS, HIGH);
   digitalWrite(TDECK_TFT_CS, HIGH);
   if (!SD.begin(TDECK_SDCARD_CS, SPI, 800000U))
