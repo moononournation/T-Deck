@@ -135,9 +135,6 @@ void setup(void)
   digitalWrite(GFX_BL, HIGH);
 #endif
 
-  // If display and SD shared same interface, init SPI first
-  SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
-
   // if (!FFat.begin(false, root))
   // if (!LittleFS.begin(false, root))
   if (!SD.begin(SD_CS, SPI, 80000000, "/root"))
