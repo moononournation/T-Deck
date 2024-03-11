@@ -22,6 +22,8 @@ const char *avi_file = "/root/AviMp3Cinepak240p30fps.avi";
 
 #include <FFat.h>
 #include <LittleFS.h>
+#include <SD.h>
+#include <SD_MMC.h>
 
 extern "C"
 {
@@ -46,7 +48,7 @@ extern "C"
     delay(500);                             \
   }
 #define GFX_BL TDECK_TFT_BACKLIGHT
-Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
+Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
 /*******************************************************************************
  * End of Arduino_GFX setting
@@ -76,6 +78,12 @@ static unsigned long total_read_video_ms = 0;
 static unsigned long total_decode_video_ms = 0;
 static unsigned long total_show_video_ms = 0;
 
+// microSD card
+#define SD_SCK TDECK_SPI_SCK
+#define SD_MISO TDECK_SPI_MISO
+#define SD_MOSI TDECK_SPI_MOSI
+#define SD_CS TDECK_SDCARD_CS
+
 #include "esp32_audio.h"
 // I2S
 #define I2S_DOUT TDECK_I2S_DOUT
@@ -90,6 +98,9 @@ void setup()
   // Serial.setDebugOutput(true);
   // while(!Serial);
   Serial.println("AviMp3CinepakDMA");
+
+  // If display and SD shared same interface, init SPI first
+  SPI.begin(TDECK_SPI_SCK, TDECK_SPI_MISO, TDECK_SPI_MOSI);
 
 #ifdef GFX_EXTRA_PRE_INIT
   GFX_EXTRA_PRE_INIT();
@@ -111,8 +122,13 @@ void setup()
 #endif
 
   gfx->println("Init FS");
-  if (!FFat.begin(false, root))
+  // if (!FFat.begin(false, root))
   // if (!LittleFS.begin(false, root))
+  if (!SD.begin(SD_CS, SPI, 80000000, "/root"))
+  // pinMode(SD_CS, OUTPUT);
+  // digitalWrite(SD_CS, HIGH);
+  // SD_MMC.setPins(SD_SCK, SD_MOSI, SD_MISO);
+  // if (!SD_MMC.begin(root, true /* mode1bit */, false /* format_if_mount_failed */, SDMMC_FREQ_DEFAULT))
   {
     Serial.println("ERROR: File system mount failed!");
     gfx->println("ERROR: File system mount failed!");
