@@ -122,9 +122,9 @@ void setup()
 #endif
 
   gfx->println("Init FS");
-  // if (!FFat.begin(false, root))
+  if (!FFat.begin(false, root))
   // if (!LittleFS.begin(false, root))
-  if (!SD.begin(SD_CS, SPI, 80000000, "/root"))
+  // if (!SD.begin(SD_CS, SPI, 80000000, "/root"))
   // pinMode(SD_CS, OUTPUT);
   // digitalWrite(SD_CS, HIGH);
   // SD_MMC.setPins(SD_SCK, SD_MOSI, SD_MISO);
