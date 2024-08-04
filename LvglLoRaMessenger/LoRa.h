@@ -6,7 +6,7 @@ SX1262 radio = new Module(TDECK_RADIO_CS, TDECK_RADIO_DIO1, TDECK_RADIO_RST, TDE
 // SX1268 radio = new Module(TDECK_RADIO_CS, TDECK_RADIO_DIO1, TDECK_RADIO_RST, TDECK_RADIO_BUSY);
 
 bool transmissionFlag = true;
-bool enableInterrupt = true;
+bool isEnableInterrupt = true;
 int transmissionState;
 bool hasRadio = false;
 bool hasMsgToSend = false;
@@ -19,7 +19,7 @@ SemaphoreHandle_t xSemaphore = NULL;
 void setFlag(void)
 {
   // check if the interrupt is enabled
-  if (!enableInterrupt)
+  if (!isEnableInterrupt)
   {
     return;
   }
@@ -159,7 +159,7 @@ void loopRadio()
         {
           // disable the interrupt service routine while
           // processing the data
-          enableInterrupt = false;
+          isEnableInterrupt = false;
           // reset flag
           transmissionFlag = false;
 
@@ -187,7 +187,7 @@ void loopRadio()
 
           // we're ready to send more packets,
           // enable interrupt service routine
-          enableInterrupt = true;
+          isEnableInterrupt = true;
         }
       }
       else
@@ -201,7 +201,7 @@ void loopRadio()
 
         // we're ready to send more packets,
         // enable interrupt service routine
-        enableInterrupt = true;
+        isEnableInterrupt = true;
       }
     }
     else
@@ -213,7 +213,7 @@ void loopRadio()
       {
         // disable the interrupt service routine while
         // processing the data
-        enableInterrupt = false;
+        isEnableInterrupt = false;
 
         // reset flag
         transmissionFlag = false;
@@ -257,7 +257,7 @@ void loopRadio()
 
         // we're ready to receive more packets,
         // enable interrupt service routine
-        enableInterrupt = true;
+        isEnableInterrupt = true;
       }
     }
     xSemaphoreGive(xSemaphore);
