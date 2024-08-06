@@ -2,7 +2,7 @@
 
 #include "MP3DecoderHelix.h"
 
-#define GAIN_LEVEL 0.005
+#define I2S_DEFAULT_GAIN_LEVEL 0.005
 
 static unsigned long total_read_audio_ms = 0;
 static unsigned long total_decode_audio_ms = 0;
@@ -61,8 +61,8 @@ static void i2s_play_float(float *sample, uint16_t len)
     uint8_t *p = aBuf;
     while (i--)
     {
-        iSample.v16 = (uint16_t)(*sample++ * (32767.0f * GAIN_LEVEL)) + 32768;
-        // iSample.v16 = (uint16_t)(*sample++ * (32767.0f / 2147418112.0f * GAIN_LEVEL)) + 32768;
+        iSample.v16 = (uint16_t)(*sample++ * (32767.0f * I2S_DEFAULT_GAIN_LEVEL)) + 32768;
+        // iSample.v16 = (uint16_t)(*sample++ * (32767.0f / 2147418112.0f * I2S_DEFAULT_GAIN_LEVEL)) + 32768;
         *p++ = iSample.v8[1];
         *p++ = iSample.v8[0];
     }

@@ -1,5 +1,14 @@
 # T-Deck
 
+| Setting | Value |
+|---:|---|
+| __Board:__ | ESP32S3 Dev Module |
+| __USB CDC On Boot:__ | Enabled |
+| __Flash Mode:__ | QIO 120MHz |
+| __Flash Size:__ | 16MB(128Mb) |
+| __Partition Scheme:__ | 16M Flash(2M APP/12.5MB FATFS) |
+| __PSRAM:__ | OPI PSRAM |
+
 ## AVI conversion
 
 ```console

@@ -3,8 +3,7 @@
  * This is a benchmark demo for LVGL - Light and Versatile Graphics Library
  * import from: https://github.com/lvgl/lv_demos.git
  *
- * Required libraries:
- * Arduino_GFX: https://github.com/moononournation/Arduino_GFX.git
+ * Dependent libraries:
  * LVGL: https://github.com/lvgl/lvgl.git
  *
  * LVGL Configuration file:
@@ -25,21 +24,9 @@
  *
  * Enables support for compressed fonts:
  * #define LV_USE_FONT_COMPRESSED 1
- *
- * Customize font size:
- * #define LV_FONT_MONTSERRAT_12 1
- * #define LV_FONT_DEFAULT &lv_font_montserrat_12
- *
- * Arduino IDE Settings for T-Deck
- * Board:            "ESP32S3 Dev Module"
- * USB CDC On Boot:  "Enable"
- * Flash Mode:       "QIO 120MHz"
- * Flash Size:       "16MB(128Mb)"
- * Partition Scheme: "16M Flash(2M APP/12.5MB FATFS)"
- * PSRAM:            "OPI PSRAM"
  ******************************************************************************/
-
 #include "lv_demo_benchmark.h"
+// #define DIRECT_MODE // Uncomment to enable full frame buffer
 
 #include "TDECK_PINS.h"
 
@@ -60,8 +47,9 @@
   }
 #define GFX_BL TDECK_TFT_BACKLIGHT
 Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
-Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
-Arduino_Canvas *canvasGfx = new Arduino_Canvas(640 /* width */, 480 /* height */, gfx);
+Arduino_GFX *g = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, true /* IPS */);
+#define CANVAS
+Arduino_Canvas *gfx = new Arduino_Canvas(640 /* width */, 480 /* height */, g);
 /*******************************************************************************
  * End of Arduino_GFX setting
  ******************************************************************************/
@@ -71,32 +59,32 @@ Arduino_Canvas *canvasGfx = new Arduino_Canvas(640 /* width */, 480 /* height */
  ******************************************************************************/
 #include "touch.h"
 
-/* Change to your screen resolution */
-static uint32_t screenWidth;
-static uint32_t screenHeight;
-static lv_disp_draw_buf_t draw_buf;
-static lv_color_t *disp_draw_buf;
-static lv_disp_drv_t disp_drv;
-static unsigned long last_ms;
+uint32_t screenWidth;
+uint32_t screenHeight;
+uint32_t bufSize;
+lv_disp_draw_buf_t draw_buf;
+lv_color_t *disp_draw_buf;
+lv_disp_drv_t disp_drv;
 
 /* Display flushing */
-static bool canvasUpdated = false;
-void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+void my_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
+#ifndef DIRECT_MODE
   uint32_t w = (area->x2 - area->x1 + 1);
   uint32_t h = (area->y2 - area->y1 + 1);
 
 #if (LV_COLOR_16_SWAP != 0)
-  canvasGfx->draw16bitBeRGBBitmap(area->x1, area->y1, (uint16_t *)&color_p->full, w, h);
+  gfx->draw16bitBeRGBBitmap(area->x1, area->y1, (uint16_t *)&color_p->full, w, h);
 #else
-  canvasGfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)&color_p->full, w, h);
+  gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)&color_p->full, w, h);
 #endif
+#endif // #ifndef DIRECT_MODE
 
-  canvasUpdated = true;
-  lv_disp_flush_ready(disp);
+  lv_disp_flush_ready(disp_drv);
 }
 
-void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
+/*Read the touchpad*/
+void my_touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
 {
   if (touch_has_signal())
   {
@@ -124,46 +112,62 @@ void setup()
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
   // while(!Serial);
-  Serial.println("LVGL Benchmark Demo");
+  Serial.print("Arduino_GFX LVGL Benchmark example ");
+  String LVGL_Arduino = String('V') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
+  Serial.println(LVGL_Arduino);
 
 #ifdef GFX_EXTRA_PRE_INIT
   GFX_EXTRA_PRE_INIT();
 #endif
 
   // Init Display
-  if (!canvasGfx->begin(80000000))
+  if (!gfx->begin())
   {
     Serial.println("gfx->begin() failed!");
   }
-  canvasGfx->fillScreen(BLACK);
+  gfx->fillScreen(BLACK);
 
 #ifdef GFX_BL
-  // pinMode(GFX_BL, OUTPUT);
-  // digitalWrite(GFX_BL, HIGH);
-  ledcSetup(0, 1000, 8);
-  ledcAttachPin(GFX_BL, 0);
-  ledcWrite(0, 191);
+  pinMode(GFX_BL, OUTPUT);
+  digitalWrite(GFX_BL, HIGH);
 #endif
 
   // Init touch device
-  touch_init(canvasGfx->width(), canvasGfx->height(), canvasGfx->getRotation());
+  touch_init(gfx->width(), gfx->height(), gfx->getRotation());
 
   lv_init();
 
-  screenWidth = canvasGfx->width();
-  screenHeight = canvasGfx->height();
-#ifdef ESP32
-  disp_draw_buf = (lv_color_t *)heap_caps_malloc(sizeof(lv_color_t) * screenWidth * 40, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  screenWidth = gfx->width();
+  screenHeight = gfx->height();
+
+#ifdef DIRECT_MODE
+  bufSize = screenWidth * screenHeight;
 #else
-  disp_draw_buf = (lv_color_t *)malloc(sizeof(lv_color_t) * screenWidth * 40);
+  bufSize = screenWidth * 40;
 #endif
+
+#ifdef ESP32
+#if defined(DIRECT_MODE) && (defined(CANVAS) || defined(RGB_PANEL))
+  disp_draw_buf = (lv_color_t *)gfx->getFramebuffer();
+#else  // !(defined(DIRECT_MODE) && (defined(CANVAS) || defined(RGB_PANEL)))
+  disp_draw_buf = (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  if (!disp_draw_buf)
+  {
+    // remove MALLOC_CAP_INTERNAL flag try again
+    disp_draw_buf = (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_8BIT);
+  }
+#endif // !(defined(DIRECT_MODE) && (defined(CANVAS) || defined(RGB_PANEL)))
+#else  // !ESP32
+  Serial.println("LVGL disp_draw_buf heap_caps_malloc failed! malloc again...");
+  disp_draw_buf = (lv_color_t *)malloc(bufSize * 2);
+#endif // !ESP32
   if (!disp_draw_buf)
   {
     Serial.println("LVGL disp_draw_buf allocate failed!");
   }
   else
   {
-    lv_disp_draw_buf_init(&draw_buf, disp_draw_buf, NULL, screenWidth * 40);
+    lv_disp_draw_buf_init(&draw_buf, disp_draw_buf, NULL, bufSize);
 
     /* Initialize the display */
     lv_disp_drv_init(&disp_drv);
@@ -172,9 +176,12 @@ void setup()
     disp_drv.ver_res = screenHeight;
     disp_drv.flush_cb = my_disp_flush;
     disp_drv.draw_buf = &draw_buf;
+#ifdef DIRECT_MODE
+    disp_drv.direct_mode = true;
+#endif
     lv_disp_drv_register(&disp_drv);
 
-    /* Initialize the input device driver */
+    /* Initialize the (dummy) input device driver */
     static lv_indev_drv_t indev_drv;
     lv_indev_drv_init(&indev_drv);
     indev_drv.type = LV_INDEV_TYPE_POINTER;
@@ -182,19 +189,30 @@ void setup()
     lv_indev_drv_register(&indev_drv);
 
     lv_demo_benchmark();
-
-    Serial.println("Setup done");
   }
-  last_ms = millis();
+
+  Serial.println("Setup done");
 }
 
 void loop()
 {
   lv_timer_handler(); /* let the GUI do its work */
-  if (canvasUpdated)
-  {
-    canvasGfx->flushQuad();
-    canvasUpdated = false;
-  }
+
+#ifdef DIRECT_MODE
+#if defined(CANVAS) || defined(RGB_PANEL)
+  gfx->flush();
+#else // !(defined(CANVAS) || defined(RGB_PANEL))
+#if (LV_COLOR_16_SWAP != 0)
+  gfx->draw16bitBeRGBBitmap(0, 0, (uint16_t *)disp_draw_buf, screenWidth, screenHeight);
+#else
+  gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)disp_draw_buf, screenWidth, screenHeight);
+#endif
+#endif // !(defined(CANVAS) || defined(RGB_PANEL))
+#else  // !DIRECT_MODE
+#ifdef CANVAS
+  gfx->flushQuad();
+#endif
+#endif // !DIRECT_MODE
+
   delay(5);
 }

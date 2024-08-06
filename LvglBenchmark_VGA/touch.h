@@ -4,6 +4,19 @@
  *
  * Capacitive touchscreen libraries
  * TouchLib: https://github.com/mmMicky/TouchLib.git
+ *
+ * #define CTS328_SLAVE_ADDRESS  (0x1A)
+ * #define L58_SLAVE_ADDRESS     (0X5A)
+ * #define CTS826_SLAVE_ADDRESS  (0X15)
+ * #define CTS820_SLAVE_ADDRESS  (0X15)
+ * #define CTS816S_SLAVE_ADDRESS (0X15)
+ * #define FT3267_SLAVE_ADDRESS  (0x38)
+ * #define FT5x06_ADDR           (0x38)
+ * #define GT911_SLAVE_ADDRESS1  (0X5D)
+ * #define GT911_SLAVE_ADDRESS2  (0X14)
+ * #define ZTW622_SLAVE1_ADDRESS (0x20)
+ * #define ZTW622_SLAVE2_ADDRESS (0x46)
+ *
  ******************************************************************************/
 
 /* uncomment for XPT2046 */
@@ -25,11 +38,11 @@
 #define TOUCH_INT 16
 
 // Please fill below values from Arduino_GFX Example - TouchCalibration
-bool touch_swap_xy = true;
-int16_t touch_map_x1 = 0;
-int16_t touch_map_x2 = 320;
-int16_t touch_map_y1 = 240;
-int16_t touch_map_y2 = 0;
+bool touch_swap_xy = false;
+int16_t touch_map_x1 = -1;
+int16_t touch_map_x2 = -1;
+int16_t touch_map_y1 = -1;
+int16_t touch_map_y2 = -1;
 
 int16_t touch_max_x = 0, touch_max_y = 0;
 int16_t touch_raw_x = 0, touch_raw_y = 0;
