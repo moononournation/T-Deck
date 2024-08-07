@@ -4,6 +4,19 @@
  *
  * Capacitive touchscreen libraries
  * TouchLib: https://github.com/mmMicky/TouchLib.git
+ *
+ * #define CTS328_SLAVE_ADDRESS  (0x1A)
+ * #define L58_SLAVE_ADDRESS     (0X5A)
+ * #define CTS826_SLAVE_ADDRESS  (0X15)
+ * #define CTS820_SLAVE_ADDRESS  (0X15)
+ * #define CTS816S_SLAVE_ADDRESS (0X15)
+ * #define FT3267_SLAVE_ADDRESS  (0x38)
+ * #define FT5x06_ADDR           (0x38)
+ * #define GT911_SLAVE_ADDRESS1  (0X5D)
+ * #define GT911_SLAVE_ADDRESS2  (0X14)
+ * #define ZTW622_SLAVE1_ADDRESS (0x20)
+ * #define ZTW622_SLAVE2_ADDRESS (0x46)
+ *
  ******************************************************************************/
 
 /* uncomment for XPT2046 */
@@ -17,12 +30,12 @@
 // #define TOUCH_XPT2046_SAMPLES 50
 
 // uncomment for most capacitive touchscreen
-#define TOUCH_MODULES_GT911 // GT911 / CST_SELF / CST_MUTUAL / ZTW622 / L58 / FT3267 / FT5x06
-#define TOUCH_MODULE_ADDR GT911_SLAVE_ADDRESS1 // CTS328_SLAVE_ADDRESS / L58_SLAVE_ADDRESS / CTS826_SLAVE_ADDRESS / CTS820_SLAVE_ADDRESS / CTS816S_SLAVE_ADDRESS / FT3267_SLAVE_ADDRESS / FT5x06_ADDR / GT911_SLAVE_ADDRESS1 / GT911_SLAVE_ADDRESS2 / ZTW622_SLAVE1_ADDRESS / ZTW622_SLAVE2_ADDRESS
-#define TOUCH_SCL 8
-#define TOUCH_SDA 18
-#define TOUCH_RES -1
-#define TOUCH_INT 16
+// #define TOUCH_MODULES_FT5x06 // GT911 / CST_SELF / CST_MUTUAL / ZTW622 / L58 / FT3267 / FT5x06
+// #define TOUCH_MODULE_ADDR FT5x06_ADDR // CTS328_SLAVE_ADDRESS / L58_SLAVE_ADDRESS / CTS826_SLAVE_ADDRESS / CTS820_SLAVE_ADDRESS / CTS816S_SLAVE_ADDRESS / FT3267_SLAVE_ADDRESS / FT5x06_ADDR / GT911_SLAVE_ADDRESS1 / GT911_SLAVE_ADDRESS2 / ZTW622_SLAVE1_ADDRESS / ZTW622_SLAVE2_ADDRESS
+// #define TOUCH_SCL 5
+// #define TOUCH_SDA 6
+// #define TOUCH_RES -1
+// #define TOUCH_INT -1
 
 // Please fill below values from Arduino_GFX Example - TouchCalibration
 bool touch_swap_xy = false;

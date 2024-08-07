@@ -37,40 +37,11 @@
 // #define USERNAME "Carol"
 #define KEY_SCAN_MS_INTERVAL 200
 
-#include <lvgl.h>
-#include "ui.h"
-
-#include "TDECK_PINS.h"
-
-#include <WiFi.h>
-
-/*******************************************************************************
- * Start of Arduino_GFX setting
- ******************************************************************************/
-#include <Arduino_GFX_Library.h>
-#define GFX_DEV_DEVICE LILYGO_T_DECK
-#define GFX_EXTRA_PRE_INIT()                \
-  {                                         \
-    pinMode(TDECK_SDCARD_CS, OUTPUT);       \
-    digitalWrite(TDECK_SDCARD_CS, HIGH);    \
-    pinMode(TDECK_RADIO_CS, OUTPUT);        \
-    digitalWrite(TDECK_RADIO_CS, HIGH);     \
-    pinMode(TDECK_PERI_POWERON, OUTPUT);    \
-    digitalWrite(TDECK_PERI_POWERON, HIGH); \
-    delay(500);                             \
-  }
-#define GFX_BL TDECK_TFT_BACKLIGHT
-Arduino_DataBus *bus = new Arduino_ESP32SPI(TDECK_TFT_DC, TDECK_TFT_CS, TDECK_SPI_SCK, TDECK_SPI_MOSI, TDECK_SPI_MISO);
-Arduino_GFX *gfx = new Arduino_ST7789(bus, GFX_NOT_DEFINED /* RST */, 1 /* rotation */, false /* IPS */);
-/*******************************************************************************
- * End of Arduino_GFX setting
- ******************************************************************************/
-
-/*******************************************************************************
- * Please config the touch panel in touch.h
- ******************************************************************************/
+#include "T_DECK.h"
 #include "touch.h"
 
+#include <lvgl.h>
+#include "ui.h"
 #include <SPI.h>
 #include <RadioLib.h>
 
@@ -285,8 +256,6 @@ void sendTextInput(lv_event_t *e)
 
 void setup()
 {
-  WiFi.mode(WIFI_OFF);
-
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
   // while(!Serial);
@@ -309,9 +278,10 @@ void setup()
 #ifdef GFX_BL
   // pinMode(GFX_BL, OUTPUT);
   // digitalWrite(GFX_BL, HIGH);
-  ledcSetup(0, 1000, 8);
-  ledcAttachPin(GFX_BL, 0);
-  ledcWrite(0, 191);
+  // ledcSetup(0, 1000, 8);
+  // ledcAttachPin(GFX_BL, 0);
+  ledcAttach(GFX_BL, 1000, 8);
+  ledcWrite(GFX_BL, 191);
 #endif
 
   // Init touch device
