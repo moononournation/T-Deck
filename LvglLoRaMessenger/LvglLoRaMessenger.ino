@@ -276,13 +276,15 @@ void setup()
   gfx->fillScreen(BLACK);
 
 #ifdef GFX_BL
-  // pinMode(GFX_BL, OUTPUT);
-  // digitalWrite(GFX_BL, HIGH);
-  // ledcSetup(0, 1000, 8);
-  // ledcAttachPin(GFX_BL, 0);
+#if defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR < 3)
+  ledcSetup(0, 1000, 8);
+  ledcAttachPin(GFX_BL, 0);
+  ledcWrite(0, 191);
+#else // ESP_ARDUINO_VERSION_MAJOR >= 3
   ledcAttach(GFX_BL, 1000, 8);
   ledcWrite(GFX_BL, 191);
-#endif
+#endif // ESP_ARDUINO_VERSION_MAJOR >= 3
+#endif // GFX_BL
 
   // Init touch device
   touch_init(gfx->width(), gfx->height(), gfx->getRotation());
